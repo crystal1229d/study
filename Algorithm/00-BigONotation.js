@@ -4,7 +4,9 @@
 
     =============================
 
-    Section 2. Big O Notation
+    Section 1. Big O Notation
+
+    1-1 Idea of Big O Notation
 
     =============================
 

@@ -4,7 +4,9 @@
 
     =============================
 
-    Section 2. Simplyfing Big O Expressions
+    Section 1. Big O Notation
+
+    1-2 Simplyfing Big O Expressions
 
     =============================
 
