@@ -37,7 +37,9 @@
 
 
     <Who Cares?>
-    
+    * Certain 'searching algorithms' have logarithmic time complexity. 탐색 알고리즘
+    * Efficient 'sorting algorithms' involved logarithms. 효율적인 정렬 알고리즘
+    * 'Recursion' sometimes involves logarithmic space complexity. 재귀의 공간 복잡도 (시간X)
 
 
 
