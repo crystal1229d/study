@@ -6,7 +6,7 @@
 
     Section 2. Performance of Array & Object
 
-    2-2 Quiz : Object 
+    2-2 Quiz : Object BigO
 
     =============================
 
