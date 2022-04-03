@@ -1,9 +1,8 @@
-    
 # [Udemy] Prefect REACT Guide (with Redux, Next.js, TypeScript)
 
 ---
 
-Section 2. JavaScript Refresher 
+## Section 2. Next-Gen JavaScript Refresher 
 
 2-1 Module
 
@@ -23,8 +22,9 @@ Section 2. JavaScript Refresher
 
 2-9 Primitive & Reference (Data) Type 
 
----
+2-10 Array Functions
 
+---
 
 ## Arrow Function
 Advantages
@@ -302,4 +302,16 @@ const person = {
 const secondPerson = { ...person } // person 객체의 속성과 값을 추출하여 새로 생성된 객체에 추가 (중괄호를 이용하여 새로운 객체 생성) = 진짜 복사!
 person.name = 'soojung'
 console.log(person, secondPerson)   // 'soojung', 'crystal'
+```
+
+<br>
+## Array Functions 
+```
+const numbers = [ 1, 2, 3 ]
+
+// 모든 숫자를 2배
+const doubleNumArray = numbers.map((num) => { return num * 2 })
+
+console.log(numbers)            // Expected Result : Array [1, 2, 3]
+console.log(doubleNumArray)     // Expected Result : Array [2, 4, 6] 
 ```
