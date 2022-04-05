@@ -2,7 +2,7 @@
 
 ---
 
-## Section 3. Algirithms & Problem Solving Patterns
+## Section 3. Algirithms & Problem Solving Approach
 
 ### 3-3 Explore Concrete Examples
 
