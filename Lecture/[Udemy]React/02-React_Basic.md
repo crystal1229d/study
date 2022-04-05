@@ -10,10 +10,18 @@
 
 3-3 React Project (feat. CRA)
 
+3-4 Composition (props.children)
+
+3-5 JSX (feat.createElement)
+
+3-6 Constructing Component File
+
+3-7 State
+
 ---
 
 
-## Module
+## <span style='font-weight:700;background:#D3D3D3'>Module</span>
 Component-Driven User Interfaces
 Building Interactive & Scalable UIs 
 Component 라는 개념 이용하여 UI 만들기
@@ -22,12 +30,13 @@ Module Content
 - React Core Syntax & JSX
 - Working with Components 
 - Workign with Data 
+  - props
 
 <br>
-## Component
-```
-컴포넌트란 무엇인가? 왜 리액트는 컴포넌트의 전부라고하는가?
-```
+## <span style='font-weight:700;background:#D3D3D3'>Component</span>
+
+<span style='font-weight:700;background:#D3D3D3'>컴포넌트란 무엇인가? 왜 리액트는 컴포넌트의 전부라고하는가?</span>
+
 리액트는 컴포넌트로 구성되어있다
 
 React is a JavaScript library for building user interfaces
@@ -44,9 +53,9 @@ Because all user interfaces in the end are made up of components
     Don't do too many things in one and the same place (function)
 - Reusability, Separation of Concerns => Split big chunks of code into multiple smaller functions 
 
-```
-리액트 코드는 '선언적 방식'으로 작성됐다
-```
+
+<span style='font-weight:800;background:#fff5b1'>리액트 코드는 '선언적 방식'으로 작성됐다</span>
+
 #### How is a Component built?
 - React allows you to create __re-usuable and reactive components__ 
     consisting of __HTML and JavaScript__ (and CSS)    
@@ -55,8 +64,13 @@ Because all user interfaces in the end are made up of components
 
 Build your own, __custom HTML Elements__
 
+- <span style='font-weight:800;background:#fff5b1'>Custom Component (사용자 지정 컴포넌트) 들은 실제로 화면에 보이게 되는 HTML 요소가 아니고, 
+단순히 사용자가 React 코드, JSX 코드에서 사용하게 된다. 
+결국 화면에 나타나는 건 HTML 요소들인데, 
+그 이유는 우리가 만드는 모든 Custom Components 는 이러한 내장된 HTML 요소들을 사용하거나 다른 컴포넌트들(결국 이들도 내장된 HTML 요소들을 사용한 것임)을 사용하기 때문이다. </span>
+
 <br>
-## React Project 생성 및 분석(feat. CRA)
+## <span style='font-weight:700;background:#D3D3D3'>React Project 생성 및 분석(feat. CRA)</span>
 1. CRA  
 yarn create react-app react-complete-guide 
 
@@ -67,7 +81,7 @@ npm install
 3. 프로젝트 실행
 yarn start 
 
-#### <!> <U>index.js 파일은 첫 번째로 실행되는 파일</U>
+#### <span style='font-weight:800;background:#F05650'><!></span> <U>index.js 파일은 첫 번째로 실행되는 파일</U>
 #### 1) src/index.js
 - 'react-dom'(third-party library, 목록은 package.json 에서 확인) 에서 ReactDOM 객체를 import 
 - package.json 에는 두 개의 리액트 종속성(dependency)가 있음 : __react__, __react-dom__
@@ -123,9 +137,7 @@ function App() {
 }
 export default App;
 ```
-
 <br>
-## Make Own Project
 ####Build a Component Tree
 - 하나의 컴포넌트의 return 명령 당 (혹은 하나의 JSX 코드 당) 하나의 Root 요소만 가져야 한다
 ```
@@ -139,12 +151,12 @@ export default App;
         |___<Task />
 ```
 
-#### <!> <U>React 에서 Component 는 JavaScript 함수 일 뿐이다</U>
+#### <span style='font-weight:800;background:#F05650'><!></span> <U>React 에서 Component 는 JavaScript 함수 일 뿐이다</U>
 
 <br>
-## Composition
+## <span style='font-weight:700;background:#D3D3D3'>Composition</span>
 __Composition__ : 작은 빌딩 블록을 모아 UI (User Interface) 를 만드는 것
-<br>
+
 Shell 역할을 하는 Component 
 : ExpenseItem 콘텐츠나 Expenses 콘텐츠를 div 대신 특정 CSS 로 꾸며진 카드로 감싼다
 
@@ -152,9 +164,9 @@ ExpenseItem.js 에서 ```return (<div>...</div>)``` 대신 ```return (<Card>...<
 
 단, custom component 인 Card 컴포넌트를 다른 콘텐츠에서 wrapper 로 사용할 수는 없다 
 그렇다면 ```return (<Card>...</Card>)``` 와 같이 사용하려면 어떻게 해야할까?
-=> __재사용 래퍼 컴포넌트 (reusuable wrapper component)__ 를 만든다!
+=> <span style='font-weight:800;background:#fff5b1'>__재사용 래퍼 컴포넌트 (reusuable wrapper component)__ 를 만든다!</span>
 <br>
-__props.children__
+<span style='font-weight:800;background:#fff5b1'>__props.children__</span>
 - children 은 reserved name 
 - this special 'children' prop will always be contents, which are between opening tag and closing tag of my custom tag.
 - 이를 이용하여 HTML 코드(div 에 있는 복잡한 JSX 코드), CSS 코드를 추출하여 코드 복제를 저장할 수 있다.
@@ -231,3 +243,94 @@ function Expenses(props) {
 export default Expenses
 ```
 그러면 이렇게 가장 바깥이 둥근 형태로 잘 적용된다.
+
+<br>
+## <span style='font-weight:700;background:#D3D3D3'>JSX</span>
+- Browser 는 JSX 코드를 지원하지 않는다
+- 우리는 가독성 높은 코드를 작성하고, 브라우저에서 보여주기 전에 변환하는 것
+  - package.json 의 dependency 들 대부분이 (보이지 않는 곳에서의) 변환을 다룬다
+  - 그 중 React 와 연관 있는 두 개의 dependency : react, react-dom
+  ![screenshot](./img/dependency.png)
+  - index.js 에서 react-dom 은 사용하고 있지만, react 는 사용하고 있지 않다. 어디에서도 react 는 import 하지 않고 있다. (다른 버전의 CRA 나 다른 프로그램에서는 react 를 불러올 수도 있음)
+  ```
+  // index.js
+  import ReactDOM from 'react-dom';
+  import App from './App';
+
+  ReactDOM.render(<App />, document.getElementById('root'));
+  ```
+  - 과거에는 사실상 모든 React Component file 에서 React 를 import 해야만 했다 (더 정확히 말하자면, JSX 를 사용하는 모든 file 에서)
+  JSX 코드는 읽기 쉽고 이해하기 편한 문법에 불과해서, 과거에는 import해와야 했다. 
+  ``` return ( <div>...</div> ) ``` return( ) 내부의 JSX 코드는 import 된 React 객체의 method로 변형된다. (React.createElement)
+  
+  - 이제 꼭 그렇게하지 않아도 되는 이유는, 최신 React Project Setup 이 React 를 import 하지 않고도 변형이 가능하게끔 하기 때문. 
+  사용되고 있지 않은 것이 아니다. 사실상 뒤에서 열심히 JSX 코드를 변형하고 있다!!
+  ```
+  // common JSX code (before transformed by React)
+  return (
+    <div>
+      <h2>Let's get started!</h2>
+      <Expenses items={expenses} />
+    </div>
+  )
+  ```
+  ```
+  // after transformed by React
+  return React.createElement(
+    'div',
+    {},
+    React.createElement('h2', {}, 'Let's get started!'),
+    React.createElement(Expenses, { items: expenses })
+  )
+  ```
+- 변형된 코드를 보면, 왜 root JSX element 로서 1개의 wrapper element 가 필요한지 알 수 있다 : createElement 입장에서 여러 개의 엘리먼트들을 return 하면 작성할 수 없기 때문!
+  - createElement 는 항상 1개의 element 를 생성한 후에 child element 를 여러 개 더 가질 수 있다.
+```
+  // IMPOSSIBLE (several root elements)
+  return (
+    <h2>Let's get started!</h2>
+    <Expenses items={expenses} />
+  )
+
+  return 
+    React.createElement('h2', {}, 'Let's get started!'),
+    React.createElement(Expenses, { items: expenses })
+  
+```
+```
+  // POSSIBLE (one root element)
+  return (
+    <div>
+      <h2>Let's get started!</h2>
+      <Expenses items={expenses} />
+    </div>
+  )
+
+  return React.createElement(
+    'div',
+    {},
+    React.createElement('h2', {}, 'Let's get started!'),
+    React.createElement(Expenses, { items: expenses })
+  )
+  ```
+
+<br>
+
+## <span style='font-weight:700;background:#D3D3D3'>Constructing Component Files</span>
+
+파일을 잘 정리하고, 컴포넌트들을 체계화시키고, 모든 컴포넌트들이 하나의 큰 폴더에 들어있지 않게끔 한다.
+
+Component 는 아래와 같은 기준으로 나눌 수 있다.
+1) 앱의 특정 기능에 국한되지 않은 일반적인 UI Component
+2) 특정 기능을 가진 Component 
+![screenshot](./img/structure00.png)
+![screenshot](./img/structure01.png)
+이와 같은 상황에서는 다음과 같이 나눌 수 있으며, 나눈 기준 별로 폴더를 생성하여 정리해준다.
+- 기능을 가진 Component : Expenses, ExpenseItem, ExpenseData (Expenses 의 데이터 렌더링 처리)
+- UI Component : Card
+![screenshot](./img/structure02.png)
+
+<br>
+
+## <span style='font-weight:700;background:#D3D3D3'>State</span>
+컴포넌트 파일 구성 : 
