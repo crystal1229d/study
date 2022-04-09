@@ -4,7 +4,7 @@
 
 ## Section 3. 리액트 기초 및 실습 컴포넌트
 
-3-1 Module
+3-1 What to Learn 
 
 3-2 Component
 
@@ -16,21 +16,22 @@
 
 3-6 Constructing Component File
 
-3-7 State
+3-7 QUIZ
 
 ---
 
 
-## <span style='font-weight:700;background:#D3D3D3'>Module</span>
-Component-Driven User Interfaces
-Building Interactive & Scalable UIs 
+## <span style='font-weight:700;background:#D3D3D3'>What to Learn</span>
+#### Component-Driven User Interfaces : Building Interactive & Scalable UIs 
 Component 라는 개념 이용하여 UI 만들기
 
-Module Content
+< Module Content >
 - React Core Syntax & JSX
 - Working with Components 
 - Workign with Data 
   - props
+
+---
 
 <br>
 ## <span style='font-weight:700;background:#D3D3D3'>Component</span>
@@ -57,6 +58,7 @@ Because all user interfaces in the end are made up of components
 <span style='font-weight:800;background:#fff5b1'>리액트 코드는 '선언적 방식'으로 작성됐다</span>
 
 #### How is a Component built?
+![screenshot](./img/component01.png)
 - React allows you to create __re-usuable and reactive components__ 
     consisting of __HTML and JavaScript__ (and CSS)    
 => Declarative Approach ('선언 접근 방식' 으로 컴포넌트 생성)
@@ -185,8 +187,10 @@ function ExpenseItem(props) {
   return (
       <Card className='expense-item'>
         <ExpenseDate date={props.date} />
-        <div className='expense-item__description'><h2>{props.title}</h2></div>
-        <div className='expense-item__price'>${props.amount}</div>
+        <div className='expense-item__description'>
+          <h2>{props.title}</h2>
+          <div className='expense-item__price'>${props.amount}</div>
+        </div>
       </Card>
   )
 }
@@ -332,5 +336,59 @@ Component 는 아래와 같은 기준으로 나눌 수 있다.
 
 <br>
 
-## <span style='font-weight:700;background:#D3D3D3'>State</span>
-컴포넌트 파일 구성 : 
+<br>
+
+### <참고> 대체 함수 문법 (syntax) 
+1) 화살표 함수 문법 
+App.js 뿐 만 아니라 Card.js, Expenses.js 등 적용할 수 있는 곳에 모두 적용한다
+  ```
+function App() { ... }
+const App = () => { ... } 
+
+function Card (props) { ... }
+const Card = (props) => { ... }
+
+function Expenses (props) { ... }
+const Expenses = (props) => { ... }
+
+...
+  ``` 
+
+
+<br>
+
+## <span style='font-weight:700;background:#D3D3D3'>QUIZ</span>
+In this course module, you learned about key React features which you must know for every React app you're going to build! Hence it's time to check what you learned and verify that we're all on the same page!
+
+1. Which kind of code do you write when using React.js?
+[ ] Definitive JSX Code
+[ ] Imperative JavaScript Code
+[O] Declarative JavaScript Code
+  ```
+With React.js, you define the "goal" 
+(i.e. what whould be shown on the screen) 
+and let React figure out how to get there.
+  ```
+
+<br>
+
+2. What is "JSX" ?
+[ ] It's a standard JavaScript syntax
+[O] It's a speacial, non-standard syntax which is enabled in React projects.
+[ ] It's a special thing which you can pass to React functions
+  ```
+React projects like the ones we create via "create-react-app"
+support JSX syntax. 
+It gets compiled to standard JS code behind the scenes.
+  ```
+
+<br>
+
+3. What is React all about "Components" ?
+[O] Every UI in the end up is made up of multiple building blocks (=components), hence it makes sense to think about user interfaces as "combinations of components"
+[ ] React projects are configured to only work with components, hence you have to use them when writing React code.
+[ ]  Components offer better performance than "standard user interfaces" that don't use components.
+  ```
+"Components" are really just a way of thinking about user interfaces.
+React embraces that concept and gives you tools to build components that you can then combine.
+  ```
