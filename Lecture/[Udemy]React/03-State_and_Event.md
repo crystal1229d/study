@@ -146,3 +146,56 @@ React 가 나머지 작업을 한다 : 상태가 변할때마다 컴포넌트 �
 
 state 는 애플리케이션에 reactivity 를 더하는 중요한 개념이다.
 __state__ 와 __event listening__ 이 있다면 사용자의 입력에 react 할 수 있고, 해당 입력값은 화면에 시각적인 변화를 결과로써 가져온다.
+
+#### 한 컴포넌트에서 여러 개의 State 다루기
+1개의 컴포넌트에서 여러 개의 State 를 가질 수 있다.
+이 경우, useState 를 사용하는 두 가지 방식이 있다.
+1) 여러 개의 독립적인 State 를 갖기
+```
+const [enteredTitle, setenteredTitle] = useState('')
+const [enteredAmount, setenteredAmount] = useState(0)
+const [enteredDate, setenteredDate] = useState('')
+
+const titleChangeHandler = (event) => {
+  setenteredTitle(event.target.value)
+}
+
+const amountChangeHandler = (event) => {
+  setenteredAmount(event.target.value)
+}
+
+const dateChangeHandler = (event) => {
+  setenteredDate(event.target.value)
+}
+```
+2) 객체를 이용해 1개의 State 갖기
+```
+const [UserInput, setUserInput] = useState({
+  enteredTitle : '',
+  enteredAmount : 0,
+  enteredDtate : ''
+})
+
+
+```
+__차이점__
+- 두 번째 방식은 3개 중 하나의 state 값이 변경되면 나머지 state 모두 변경(업데이트) 된다
+- 두 번째 방식과 같이 useState 를 사용했는데, setState 를 할 때 첫 번째 방식과 동일하게 값을 업데이트 하면 안된다.
+  ```
+  const titleChangeHandler = (event) => {
+    setUerInput({
+      enteredTitle : event.target.value
+    })
+  }
+  ```
+  이렇게 하면 언급되지 않은 다른 키(enteredAmount, enteredDate)들은 버려지게 된다.  
+  <span style='background:#fff5b1'>__React 에서 State 를 update 할 때, setState 에 적힌 state 를 이전 state와 merge(병합)하지 않고, replace(대체)__</span>하기 때문이다.
+- 따라서 업데이트 하지 않는 다른 값들을 수동으로 복사해야한다 => JS 의 spread operator(...) 사용.
+아래와 같이 기존 userInput 을 전부 가져온 다음, 업데이트하고자 하는 값을 지정하여 오버라이드한다
+  ```
+  setUerInput({
+    ...userInput,
+    enteredTitle : event.target.value
+  })
+  ```
+

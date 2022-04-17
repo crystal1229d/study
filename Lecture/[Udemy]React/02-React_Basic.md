@@ -256,13 +256,31 @@ export default Expenses
   - 그 중 React 와 연관 있는 두 개의 dependency : react, react-dom
   ![screenshot](./img/dependency.png)
   - index.js 에서 react-dom 은 사용하고 있지만, react 는 사용하고 있지 않다. 어디에서도 react 는 import 하지 않고 있다. (다른 버전의 CRA 나 다른 프로그램에서는 react 를 불러올 수도 있음)
-  ```
-  // index.js
-  import ReactDOM from 'react-dom';
-  import App from './App';
+    ```
+    // index.js
+    import ReactDOM from 'react-dom';
+    import App from './App';
 
-  ReactDOM.render(<App />, document.getElementById('root'));
-  ```
+    ReactDOM.render(<App />, document.getElementById('root'));
+    ```
+  - 컴포넌트 내의 첫 줄에 있는 ```import React from 'react'``` 는 반드시 필요한 코드가 아니다. 하지만 JSX 가 이 React 라이브러리를 내부에서 사용하고 있다는 것을 보여준다.
+    ```
+    import React from 'react' 
+    import Card from '../UI/Card'
+    import ExpenseItem from './ExpenseItem'
+    import './Expenses.css'
+
+    const Expenses = (props) => {
+      return ( 
+        <Card className='expenses'>
+            <ExpenseItem title={props.items[0].title} amount={props.items[0].amount} date={props.items[0].date} />
+            <ExpenseItem title={props.items[1].title} amount={props.items[1].amount} date={props.items[1].date} />
+        </Card>
+      )
+    }
+
+    export default Expenses
+    ```
   - 과거에는 사실상 모든 React Component file 에서 React 를 import 해야만 했다 (더 정확히 말하자면, JSX 를 사용하는 모든 file 에서)
   JSX 코드는 읽기 쉽고 이해하기 편한 문법에 불과해서, 과거에는 import해와야 했다. 
   ``` return ( <div>...</div> ) ``` return( ) 내부의 JSX 코드는 import 된 React 객체의 method로 변형된다. (React.createElement)
