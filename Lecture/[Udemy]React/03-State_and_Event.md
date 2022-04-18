@@ -146,10 +146,10 @@ React 가 나머지 작업을 한다 : 상태가 변할때마다 컴포넌트 �
 
 state 는 애플리케이션에 reactivity 를 더하는 중요한 개념이다.
 __state__ 와 __event listening__ 이 있다면 사용자의 입력에 react 할 수 있고, 해당 입력값은 화면에 시각적인 변화를 결과로써 가져온다.
-
+<br>
 #### 한 컴포넌트에서 여러 개의 State 다루기
 1개의 컴포넌트에서 여러 개의 State 를 가질 수 있다.
-이 경우, useState 를 사용하는 두 가지 방식이 있다.
+이 경우, useState 를 사용하는 두 가지 방식이 있다. (편한 것으로 선택)
 1) 여러 개의 독립적인 State 를 갖기
 ```
 const [enteredTitle, setenteredTitle] = useState('')
@@ -199,3 +199,126 @@ __차이점__
   })
   ```
 
+  <br>
+__이전 State 에 의존하는 State 업데이트__
+아래와 같은 경우, 이전 상태에 따라 상태를 업데이트한다. 즉, 이전 State 에 의존하고 있는 것. 
+독립적인 여러 개의 Stae 로 접근하지 않고, 하나로 접근하는 방식을 채택하고 있는 경우, 다른 값을 복사하여 잃어버리지 않게끔 하기 때문이다.
+따라서 기존 값을 복사하기 위해 이전 상태의 snapshot 에 의존하고 새로운 값으로 override 한다.
+```
+setUerInput({
+  ...userInput,
+  enteredTitle : event.target.value
+})
+```
+상태값을 업데이트할 때마다 이전 상태값에 의존해야 한다면 이러한 상태 업데이트 함수의 대체 형태를 찾아야 한다. 다음과 같이 '상태 업데이트 함수(예: setUserInput)' 를 먼저 호출한 다음 함수를 전달한다. (예 : 익명화살표 함수)
+```
+const titleChangeHandler = (event) => {
+  setUserInput((prevState) => {})
+}
+```
+- setUserInput 에 전달하는 이 함수```() => { ... }```는 React 에 의해 자동으로 실행된다. 
+- setUserInput 의 state 를 위해 이전 state 의 snapshot 을 받는다. 이 경우, prevState 라는 객체가 그 역할. ```(prevState) => { ... } ``` 
+- prevState 라는 객체를 받아 새로운 state 의 snapshot 을 반환한다.
+방식은 이전과 동일하다. 이전 상태값을 spread operator 로 복사하여 새 객체로 만든 것을 가져오고 새로 업데이트할 상태값을 오버라이드.
+  ```
+  const titleChangeHandler = (event) => {
+    setUserInput((prevState) => { 
+      return { ...prevState, enteredTitle: event.target.value }
+    })
+  }
+  ``` 
+ 
+왜 이렇게 해야할까?
+대부분의 경우 아래 두 방법 모두 괜찮다
+하지만 React 는 상태 업데이트 스케줄을 갖고 있기 때문에 바로 실행하지 않는다 
+```
+setUerInput({
+  ...userInput,
+  enteredTitle : event.target.value
+})
+```
+```
+const titleChangeHandler = (event) => {
+  setUserInput((prevState) => { 
+    return { ...prevState, enteredTitle: event.target.value }
+  })
+}
+``` 
+첫 번째 방법의 경우, 동시에 수많은 상태 업데이트를 해야 하는 경우, 오래됐거나 잘못된 (outdated or incorrect) State 의 snapshot 에 의존하게 되는 문제가 발생한다. 
+두 번째 방법을 사용한다면, React 는 setUserInput 내에 prevState 라는 이름의 State snapshot 이 가장 최신 상태의 snapshot 이라는 것과 항상 계획된 상태 업데이트를 염두에 두고 있다는 것을 보장한다. 
+따라서 굳이 두 번째 방법을 사용하는 이유는 <span style='background:#fff5b1'>__항상 최신 상태의 스냅샷을 이용해 작업하도록 하는 좀 더 안전한 방법__</span>인 것이다. <span style='background:#fff5b1'>__이전 상태에 따라 상태를 업데이트할 경우 두 번째 함수 구문을 사용해야 한다.__</span>
+<br>
+#### Submit Form 
+1) 양식 제출 처리
+양식(form) 을 제출할 때, form 태그 내부의 type='submit' 인 button 에 onClick 함수를 지정하는 대신, form 에 onSubmit 함수를 지정한다. 
+즉, 아래 2개의 코드 중 두 번째 방식 채택
+```
+<form>
+  <input />
+  <input />
+  <button type='submit' onClick={submitHandler}>Submit</button>
+</form>
+```
+```
+<form onSubmit={submitHandler}>
+  <input />
+  <input />
+  <button type='submit'>Submit</button>
+</form>
+```
+- 주의점 : submit 버튼 클릭 시, 페이지가 리로드되게 하는 Browser의 기본동작 때문. Browser 가 form 이 제출될 때마다 웹페이지를 호스팅하고 있는 서버에 요청을 보내기 때문.
+JS 로 그러한 기본동작을 비활성화하거나 막을 수 있다. <strong>event 객체의 preventDefault 메소드</strong>를 호출하여 기본 요청을 보내는 것을 막는다 ```event.preventDefault``` 
+2) 양식 제출 후 입력값 clear 
+컴포넌트 함수의 외부 전역변수를 사용하는 대신 State 를 사용하였으므로 손쉽게 처리 가능.
+<strong>양방향 바인딩</strong>을 이용하여 처리. 
+즉, 입력값의 변화만 listen 하는 것이 아니라 입력값으로 새로운 값도 pass 할 수 있으므로 재시작하거나 입력값을 변화시킬 수 있다.
+각 input 태그의 value 에 State 를 bind 하면 끝.
+=> 입력에서 단순히 변화만 listen 하고 State를 업데이트 하는 것 뿐만 아니라 State 를 입력으로 다시 feedback 하기 때문. 따라서 State 가 변화시키면 Input 도 변화시킨다. (무한루프x)
+=> 아래 submitHandler() 와 같이 처리하면 form 제출 후 입력값을 clear 할 수 있다.
+<span style='background:#fff5b1'>__양방향 바인딩은 Form 으로 작업할 때 유용하다. 사용자 입력값을 모아주고, 변화시켜주기 때문__</span>
+```
+function NewExpenseForm() {
+
+  const [EnteredTitle, setEnteredTitle] = useState('')
+  const [EnteredAmount, setEnteredAmount] = useState(0)
+  const [EnteredDate, setEnteredDate] = useState('')
+
+  const titleChangeHandler = (event) => {
+    setEnteredTitle(event.target.value)
+  }
+
+  const amountChangeHandler = (event) => {
+    setEnteredAmount(event.target.value)
+
+  }
+
+  const dateChangeHandler = (event) => {
+    setEnteredDate(event.target.value)
+  }
+
+  const submitHandler = (event) => {
+    event.preventDefault()
+
+    const expenseData = {
+      title: EnteredTitle,
+      amount: EnteredAmount,
+      date: new Date(EnteredDate)
+    }
+
+    setEnteredTitle('')
+    setEnteredAmount(0)
+    setEnteredDate('')
+  }
+
+  return (
+    <form onSubmit={submitHandler}>
+        <input type="text" value={EnteredTitle} onChange={titleChangeHandler} />
+        <input type="number" min="0.01" step="0.01" value={EnteredAmount} onChange={amountChangeHandler} />
+        <input type="date" min="2022-01-01" max="2025-12-31" value={EnteredDate} onChange={dateChangeHandler} />
+        <button type="submit">Add Expense</button>
+    </form>
+  )
+}
+
+export default NewExpenseForm
+```

@@ -13,6 +13,7 @@ This pattern uses objects or sets to collect values/frequencies of values.
 This can often avoid the need for nested loops of O(n²) operations with arrays/strings.
 - 여러 데이터와 입력값이 서로 비슷한 값으로 구성되어 있는지 / 서로 간의 에너그램인지 / 값이 다른 값에 포함되어있는지 여부 확인
 - 데이터를 입력값이나 두 개 이상의 빈도 혹은 특정하게 발생하는 빈도와 비교 
+- 여러 데이터를 서로 비교해야 하는 경우 (특히 데이터가 같은 개별 데이터 조각으로 구성되어 있는지, 한 배열이 각 개별 데이터 조각을 제곱한 다른 배열과 같은지, 또는 내가 본 다른 것과 같은지 등을 확인해야 하는 경우)
 
 <br>
 #### < Example : Frequency Counter >
