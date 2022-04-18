@@ -4,47 +4,37 @@
 
 ## Section 4. Algirithms & Problem Solving Pattern
 
-### 4-3 Frequency Counter Pattern 
+### 4-3 Multiple Pointers Pattern 
 
 ---
 
-#### < Frequency Counters > 
-This pattern uses objects or sets to collect values / frequencies of values. 
-This can often avoid the need for nested loops of O(n²) operations with arrays / strings.
-- 여러 데이터와 입력값이 서로 비슷한 값으로 구성되어 있는지 / 서로 간의 애너그램인지 / 값이 다른 값에 포함되어 있는지 여부 확인
-- 데이터를 입력값이나 두 개 이상의 빈도 혹은 특정하게 발생하는 빈도와 비교
-- 여러 데이터를 서로 비교해야 하는 경우 (특히 데이터가 같은 개별 데이터 조각으로 구성되어 있는지, 한 배열이 각 개별 데이터 조각을 제곱한 다른 배열과 같은지, 또는 내가 본 다른 것과 같은지 등을 확인해야 하는 경우)
+#### < Multiple Pointers > 
+Creating <strong>pointers</strong> or values that correspond to an index or position and move towrads the beginning, end or middle based on a certain condition.
+<strong>Very</strong> efficient for solving problems with minimal space complexity as well.
+- 선형 구조(배열, 문자열, 이중 연결 리스트, 단일 연결리스트 등)와 같은 것을 만들어 한 쌍의 값이나 조건을 충족시키는 무언가를 찾는다 ```[-4, -3, -2, -1, 0, 1, 2]``` ```"abcedefghijk"```
+- 두 가지 참조값을 사용하여 동시에 특정 방향을 향하여 탐색하며 원하는 값을 찾는다. (서로를 향하거나 같은 방향으로. 시작지점과 방향 자유)
+    예를 들어, ```[-4, -3, -2, -1, 0, 1, 2]``` 에서 참조값1은 index 0부터 시작하여 우측으로 이동할 때 참조값2는 index 2부터 시작하여 좌측으로 이동 (참조값=포인터)
 
 <br>
+#### < Example : Multiple Pointers >
+```
 
-#### < Example : Frequency Counters >
-```
-[Problem] Write a function called 'same', which accepts two arrays. The function should return true if every value in the array has it's corresponding value squared(²) in the second array. The frequency of values must be the same.
-```
-```
-[Example] 
-same([1,2,3], [4,1,9]) // true 
-same([1,2,3], [1,9]) // false 
-same([1,2,1], [4,4,1]) // false (must be same frequency)
-```
-```
-[A naive solution (using nested loop)] Time Complexity : O(n²)
-function same (arr1, arr2) { 
-    if (arr1.length !== arr2.length) { 
-        return false 
-    }
+[Problem] 
+Write a function called sumZero which accepts a sorted array of integers. 
+The function should find the first pair where the sum is 0. 
+Return an array that includes both values that sum to zero or undefined if a pair does not exist
 
-    for (let i=0; i<arr1.length; i++) {
-        let correctIndex = arr2.indexOf(arr[i] ** 2)
-        if (correctIndex === -1) {
-            return false
-        }
-        arr2.splice(correctIndex, 1)
-    }
-
-    return true
+[Example]
+sumZero([-3, -2, -1, 0, 1, 2, 3])  // [-3, 3]
+sumZero([-2, 0, 1, 3])  // undefined
+sumZero([1, 2, 3])  // undefined
+```
+<strong>이 때, 분류(assorted) 가 아닌 정렬(sorted) 된 배열이어야 한다. 다만 오름차순이어야 한다. (sorted in order)</strong>
+```
+[A naive solution (using nested loop)] Time Complexity : O(n²), Space Complexity : O(1)
+function sumZero (arr) {
+    
 }
-
 ```
 __nested loop (중첩 루프) 는 되도록이면 사용하지 않는 것이 좋다.
 두 개의 개별 루프가 두 개의 중첩된 루프보다 훨씬 낫다.__ 아래와 같이 개선할 수 있다.
