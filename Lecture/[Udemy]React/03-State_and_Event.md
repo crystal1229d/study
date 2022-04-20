@@ -322,3 +322,8 @@ function NewExpenseForm() {
 
 export default NewExpenseForm
 ```
+
+#### 자식 대 부모 컴포넌트
+ExpenseForm 사용자 입력값을 모아 객체로 결합하고 form 내의 input 을 정리했지만 
+사실상 ExpenseForm 컴포넌트 내에서 그 데이터는 불필요하다.
+그 데이터는 Expense 배열을 갖고 있는 App.js 에서 필요로 한다. 
