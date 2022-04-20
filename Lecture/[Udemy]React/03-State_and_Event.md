@@ -322,8 +322,65 @@ function NewExpenseForm() {
 
 export default NewExpenseForm
 ```
+<br>
 
-#### 자식 대 부모 컴포넌트
+#### 자식 대 부모 컴포넌트 (상향식, Child=>Parent)
 ExpenseForm 사용자 입력값을 모아 객체로 결합하고 form 내의 input 을 정리했지만 
 사실상 ExpenseForm 컴포넌트 내에서 그 데이터는 불필요하다.
-그 데이터는 Expense 배열을 갖고 있는 App.js 에서 필요로 한다. 
+![screenshot](./img/structure03.png)
+그 데이터는 Expense 배열 데이터를 갖고 있는 App.js 에서 필요로 한다. 
+따라서 ExpenseForm => NewExpense => App 의 경로로 컴포넌트에서 컴포넌트로 수집 및 생성한 데이터를 pass 해야 한다. 
+지금까지는 데이터를 props 로 물려주는 하향식(parent->child) 방법만 배웠는데,
+props 로 반대 방향, 즉 상향식(child->parent) 으로도 데이터를 pass 할 수 있다. 
+##### (1) Parent Component => Child Component 로 함수를 props 로 전달
+아래 코드와 같이 Parent Component 에서 함수를 만든다음, Chile Component 에 props 로 해당 함수를 전달해주면 된다. 이 때, 마찬가지로 함수를 넘겨줄 때 () 를 넣어 실행시키지 않고 함수명만 넣어 함수를 가리키게(point)만 해야 한다.
+```
+function NewExpense() {
+
+  const saveExpenseDataHandler = (enteredExpenseData) => {
+    const expenseData = {
+      ...enteredExpenseData,
+      id: Math.random().toString()
+    }
+  }
+
+  return (
+    <div className="new-expense">
+        <NewExpenseForm onSaveExpenseData={saveExpenseDataHandler} />
+    </div>
+  )
+}
+
+export default NewExpense
+```
+##### (2) Child Component 내에서 props 로 전달된 함수를 사용
+Child Component 인 ExpenseForm 컴포넌트 내부에서 props 로 전달된 onSaveExpenseData 를 추출하여 필요할 때마다 실행한다
+```
+// ExpenseForm 에서 form 에 submit event 발생시 실행되는 함수 
+const submitHandler = (event) => {
+    event.preventDefault()
+
+    const expenseData = {
+      title: EnteredTitle,
+      amount: EnteredAmount,
+      date: new Date(EnteredDate)
+    }
+
+    props.onSaveExpenseData(expenseData)
+    setEnteredTitle('')
+    setEnteredAmount(0)
+    setEnteredDate('')
+  }
+```
+동일한 방식으로 App 컴포넌트에서 데이터를 전달받게끔 하면 된다
+
+#### Lifting State Up (Child=>Parent, State 끌어올리기)
+<span style='background:#fff5b1'><strong>상태 끌어올리기 : 자식 컴포넌트에서 부모 컴포넌트로 데이터 이동, 혹은 다른 자식 컴포넌트로 pass down</strong></span>
+'부모 <-> 자식' 같의 데이터 전달은 위에서 가능하다고 배웠다.
+그렇다면 직접적인 연결이 없는 형제(sibling) 컴포넌트 간의 데이터 전달은 어떻게 할까?
+결론적으로, 불가능하다. 
+하지만 서로에게 가장 가까운 <span style='background:#fff5b1'><strong>연관 컴포넌트</strong></span>를 이용하여 간접적으로 전달할 수 있다.
+![screenshot](./img/liftingStateUp.png)
+위의 경우, Expenses 와 NewExpense 컴포넌트간의 데이터 전달을 위하여 가장 가까운 상위 컴포넌트인 App 컴포넌트를 이용할 것이다. 
+App Component 의 return 된 JSX 코드에서 Expenses 와 NewExpense 두 컴포넌트 모두를 렌더링했기 때문에 둘 모두에 접근 가능하기 때문이다. 
+
