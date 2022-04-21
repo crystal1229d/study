@@ -4,29 +4,29 @@
 
 ## Section 4. Algirithms & Problem Solving Pattern
 
-### 4-3 Multiple Pointers Pattern 
+### 4-4 Sliding Window
 
 ---
 
-#### < Multiple Pointers > 
-Creating <strong>pointers</strong> or values that correspond to an index or position and move towrads the beginning, end or middle based on a certain condition.
-<strong>Very</strong> efficient for solving problems with minimal space complexity as well.
-- 선형 구조(배열, 문자열, 이중 연결 리스트, 단일 연결리스트 등)와 같은 것을 만들어 한 쌍의 값이나 조건을 충족시키는 무언가를 찾는다 ```[-4, -3, -2, -1, 0, 1, 2]``` ```"abcedefghijk"```
-- 두 가지 참조값을 사용하여 동시에 특정 방향을 향하여 탐색하며 원하는 값을 찾는다. (서로를 향하거나 같은 방향으로. 시작지점과 방향 자유)
-    예를 들어, ```[-4, -3, -2, -1, 0, 1, 2]``` 에서 참조값1은 index 0부터 시작하여 우측으로 이동할 때 참조값2는 index 2부터 시작하여 좌측으로 이동 (참조값=포인터)
+#### < Slidign Window > 
+This pattern involved creating a <strong>window</strong> which can either be an array or number from one position to another.
+Depending on a certain condition, the window either increases or closes (and a new window is created).
+Very useful for keeping track of a subset of data in an array/string etc.
+- 배열이나 문자열과 같은 일련의 데이터를 입력하거나 특정 방식으로 연속적인 해당 데이터의 하위 집합을 찾는 경우에 유용하다
+
 
 <br>
-#### < Example : Multiple Pointers >
+#### < Example : Sliding Window >
 ```
 [Problem] 
-Write a function called sumZero which accepts a sorted array of integers. 
-The function should find the first pair where the sum is 0. 
-Return an array that includes both values that sum to zero or undefined if a pair does not exist
+Write a function called maxSubarraySum which accepts an array of integers and a number called n. The function should calculate the maximum sum of n consecutive elements in the array.
 
 [Example]
-sumZero([-3, -2, -1, 0, 1, 2, 3])  // [-3, 3]
-sumZero([-2, 0, 1, 3])  // undefined
-sumZero([1, 2, 3])  // undefined
+maxSubarraySum([1, 2, 5, 2, 8, 1, 5], 2) // 10
+maxSubarraySum([1, 2, 5, 2, 8, 1, 5], 4) // 17
+maxSubarraySum([4, 2, 1, 6], 1) // 16
+maxSubarraySum([4, 2, 1, 6, 2], 4) // 13
+maxSubarraySum([], 2) // null
 ```
 <strong>이 때, 분류(assorted) 가 아닌 정렬(sorted) 된 배열이어야 한다. 다만 오름차순이어야 한다. (sorted in order)</strong>
 ```
