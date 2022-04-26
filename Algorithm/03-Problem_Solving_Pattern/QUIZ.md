@@ -147,7 +147,17 @@ function averagePair (arr, avg) {
 ```
 [Answer] 
 
-
+function averagePair(arr, num){
+  let start = 0
+  let end = arr.length-1;
+  while(start < end){
+    let avg = (arr[start]+arr[end]) / 2 
+    if(avg === num) return true;
+    else if(avg < num) start++
+    else end--
+  }
+  return false;
+}
 ```
 
 <br>
@@ -171,9 +181,145 @@ isSubsequence('abc', 'acb') // false
 ```
 [My Solution] 
 
+function isSubsequence (str1, str2) {
+
+    if (str1.length === 0 || str2.length === 0) return false
+
+    let i = 0
+    let j = 0
+
+    while (j < str2.length) {
+        if (str2[j] === str1[i]) {
+            i ++
+        }
+
+        if (i === str1.length) {
+            return true
+        }
+
+        j++
+    }
+
+    return false
+   
+}
 ```
 ```
 [Answer] 
 
+// 1) Solution 1 - 반복
+function averagePair(arr, num){
+  let start = 0
+  let end = arr.length-1;
+  while(start < end){
+    let avg = (arr[start]+arr[end]) / 2 
+    if(avg === num) return true;
+    else if(avg < num) start++
+    else end--
+  }
+  return false;
+}
 
+// 2) Solution 2 - O(1) 공간이 아닌 재귀
+function isSubsequence(str1, str2) {
+  if(str1.length === 0) return true
+  if(str2.length === 0) return false
+  if(str2[0] === str1[0]) return isSubsequence(str1.slice(1), str2.slice(1))  
+  return isSubsequence(str1, str2.slice(1))
+}
+```
+
+<br>
+
+#### < Sliding Window - maxSubarraySum > 
+```
+[Problem] 
+Given an array of integers and a number, 
+write a function called maxSubarraySum, 
+which finds the maximum sum of a subarray with the length of the number passed to the function.
+
+Note that a subarray must consist of consecutive elements from the original array.
+In the first example below, [100, 200, 300] is a subarray of the original array, but [100, 300] is not.
+
+Constarints:
+Time Complexity - O(n)
+Space Complexity - O(1)
+
+[Example]
+maxSubarraySum([100, 200, 300, 400], 2) // 700
+maxSubarraySum([1, 4, 2, 10, 23, 3, 1, 0, 20], 4) // 39
+maxSubarraySum([-3, 4, 0, -2, 6, -1], 2) // 5
+maxSubarraySum([3, -2, 7, -4, 1, -1, 4, -2, 1], 2) // 5
+maxSubarraySum([2, 3], 3) // null
+```
+```
+[My Solution] 
+
+function maxSubarraySum (arr, num) {
+    if (arr.length < num) return null
+    let temp = 0
+    let max = 0
+    for (let i=0; i<num; i++) {
+        temp += arr[i]
+    }
+    max = temp
+    for (let i=num; i<arr.length; i++) {
+        temp = temp + arr[i] - arr[i-num]
+        if (max < temp) max = temp
+    }
+
+    return max
+}
+```
+```
+[Answer] 
+
+```
+
+<br>
+
+#### < Sliding Window - minSubArrayLen > 
+```
+[Problem] 
+Wirte a function called minSubArrayLen which accepts two parameters - an array of positive integers and a positive integer.
+This function should return the minimal length of a contiguous subarray of which the sum is greater than or equal to the integer passed to the function. If there isn't one, return 0 instead.
+
+Time Complexity - O(n)
+Space Complexity - O(1)
+
+[Example]
+minSubArrayLen([2, 3, 1, 2, 4, 3], 7) // 2 -> because [4, 3] is the smalledst subarray
+minSubArrayLen([2, 1, 6, 5, 4], 9) // 2 -> because [5, 4] is the smallest subarray
+minSubArrayLen([3, 1, 7, 11, 2, 9, 8, 21, 62, 33, 19], 52) // 1 -> because [62] is greater than 52
+minSubArrayLen([1, 4, 16, 22, 5, 7, 8, 9,10], 39) // 3
+minSubArrayLen([1, 4, 16, 22, 5, 7, 8, 9,10], 55) // 5
+minSubArrayLen([4, 3, 3, 8, 1, 2, 3], 11) // 2
+minSubArrayLen([1, 4, 16, 22, 5, 7, 8, 9, 10], 95) // 0
+```
+```
+[My Solution] 
+
+
+```
+```
+[Answer] 
+```
+
+<br>
+
+#### < Sliding Window - maxSubarraySum > 
+```
+[Problem] 
+
+[Example]
+isSubsequence('hello', 'hello world') // true
+isSubsequence('sing', 'sting') // true
+isSubsequence('abc', 'abracadabra') // false
+isSubsequence('abc', 'acb') // false
+```
+```
+[My Solution] 
+```
+```
+[Answer] 
 ```
