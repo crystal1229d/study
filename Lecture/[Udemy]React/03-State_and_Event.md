@@ -4,11 +4,9 @@
 
 ## Section 4. 리액트 State 및 이벤트 다루기
 
-3-1 What to Learn
+4-1 What to Learn
 
-3-2 State
-
-3-3 
+4-2 State
 
 ---
 
@@ -384,3 +382,15 @@ const submitHandler = (event) => {
 위의 경우, Expenses 와 NewExpense 컴포넌트간의 데이터 전달을 위하여 가장 가까운 상위 컴포넌트인 App 컴포넌트를 이용할 것이다. 
 App Component 의 return 된 JSX 코드에서 Expenses 와 NewExpense 두 컴포넌트 모두를 렌더링했기 때문에 둘 모두에 접근 가능하기 때문이다. 
 
+<br>
+
+#### Statefull vs Stateless
+상태유지 컴포넌트   <->   무상태 컴포넌트
+Statefull             Stateless
+Smart                 Dumb
+                      Presentational
+
+무상태 컴포넌트 : 어떠한 state 를 갖지 않고 단지 데이터를 출력하기 위해 존재하는 컴포넌트.
+부정적인 단어(dumb) 가 쓰이긴 했지만 부정적으로 받아들여서는 안된다.
+프로젝트에서는 statefull component 보다 stateless component 를 더 많이 갖게된다.
+<span style='background:#fff5b1'><strong>일부 컴포넌트 만이 state 를 관리한다. 이 state 는 결국 props 를 통해 분산된다.</strong></span>
