@@ -24,3 +24,103 @@
 #### 이벤트 리스닝 및 이벤트 핸들러 수행
 dynamic content = dynamic data. 
 정적 데이터는 코드 상에서 갖고 있는 데이터를 의미한다. 
+
+```
+const Expenses = (props) => {
+
+  const [filteredYear, setfilteredYear] = useState('2022')
+
+  const filterChangeHandler = selectedYear => {
+    setfilteredYear(selectedYear)
+  }
+
+  const filteredExpenses = props.items.filter(expense => {
+    return expense.date.getFullYear().toString() === filteredYear 
+  })
+
+  return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        <ExpenseItem title={props.items[0].title} amount={props.items[0].amount} date={props.items[0].date} />
+        <ExpenseItem title={props.items[1].title} amount={props.items[1].amount} date={props.items[1].date} />
+        <ExpenseItem title={props.items[2].title} amount={props.items[2].amount} date={props.items[2].date} />
+        <ExpenseItem title={props.items[3].title} amount={props.items[3].amount} date={props.items[3].date} /> 
+    </Card>
+  )
+}
+
+export default Expenses
+```
+
+<br>
+동적 데이터 출력 : map 메서드 사용
+```
+return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        { filteredExpenses.map(expense => <ExpenseItem key={expense.id} title={expense.title} amount={expense.amount} date={expense.date} />) 
+        }
+    </Card>
+)
+```
+
+<br>
+조건부 내용 출력 : 3항 연산자 사용
+```
+return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        { filteredExpenses.length === 0  
+            ? (<p>No Expenses Found</p>) 
+            : filteredExpenses.map(expense => <ExpenseItem key={expense.id} title={expense.title} amount={expense.amount} date={expense.date} />) 
+        }
+    </Card>
+)
+```
+
+<br>
+조건부 내용 출력 : && (and)연산자 + 3항 연산자 사용 => 두 개의 표현식으로 나누어 조건 체크 
+```
+return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        { filteredExpenses.length === 0 && (<p>No Expenses Found</p>) }
+        { filteredExpenses.length > 0 &&
+            filteredExpenses.map(expense => <ExpenseItem key={expense.id} title={expense.title} amount={expense.amount} date={expense.date} />) 
+        }
+    </Card>
+)
+```
+
+<br>
+가장 깔끔한 방식(Lean JSX) : JSX 코드 내에 너무 많은 내용이 있으므로 <strong>변수를 추가</strong>
+해당 변수에 JSX content 저장 
+```
+const Expenses = (props) => {
+
+  const [filteredYear, setfilteredYear] = useState('2022')
+
+  const filterChangeHandler = selectedYear => {
+    setfilteredYear(selectedYear)
+  }
+
+  const filteredExpenses = props.items.filter(expense => {
+    return expense.date.getFullYear().toString() === filteredYear 
+  })
+
+  let expensesContent = <p>No expenses found</p>
+
+  if (filteredExpenses.length > 0) {
+    expensesContent = filteredExpenses.map(expense => <ExpenseItem key={expense.id} title={expense.title} amount={expense.amount} date={expense.date} />)
+  }
+
+  return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        { expensesContent }
+    </Card>
+  )
+}
+
+export default Expenses
+```
