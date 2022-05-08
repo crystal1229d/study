@@ -7,7 +7,7 @@
 
 5-1 What to Learn
 
-5-2 State
+5-2 Conditionally Rendering Data
 
 ---
 
@@ -93,8 +93,7 @@ return (
 ```
 
 <br>
-가장 깔끔한 방식(Lean JSX) : JSX 코드 내에 너무 많은 내용이 있으므로 <strong>변수를 추가</strong>
-해당 변수에 JSX content 저장 
+가장 깔끔한 방식(Lean JSX) : JSX 코드 내에 너무 많은 내용이 있으므로 <strong>JSX content 를 저장하는 변수 추가</strong> 
 ```
 const Expenses = (props) => {
 
@@ -123,4 +122,51 @@ const Expenses = (props) => {
 }
 
 export default Expenses
+```
+
+<br>
+위에서 추가한 로직을 컴포넌트로 추출 
+```
+// Expenses.js 
+const Expenses = (props) => {
+
+  const [filteredYear, setfilteredYear] = useState('2022')
+
+  const filterChangeHandler = selectedYear => {
+    setfilteredYear(selectedYear)
+  }
+
+  const filteredExpenses = props.items.filter(expense => {
+    return expense.date.getFullYear().toString() === filteredYear 
+  })
+
+  return ( 
+    <Card className='expenses'>
+        <ExpenseFilter selected={filteredYear} onChangeFilter={filterChangeHandler} />
+        <ExpensesList items={filteredExpenses} />
+    </Card>
+  )
+}
+
+
+// ExpensesList.js
+const ExpensesList = (props) => {
+
+    if (props.items.length === 0) {
+        return <h2 className='expenses-list__fallback'>Found No Expenses</h2>
+    }
+
+    return (
+        <ul className='expenses-list'>
+            { props.items.map((expense) => (
+                <ExpenseItem 
+                    key={expense.id} 
+                    title={expense.title} 
+                    amount={expense.amount} 
+                    date={expense.date} 
+                /> ) 
+            )}
+        </ul>
+    )
+}
 ```
