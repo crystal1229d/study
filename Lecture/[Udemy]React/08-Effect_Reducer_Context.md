@@ -1020,3 +1020,917 @@ Generally, you'll know when you need useReducer() (=> when using useState() beco
   * Great if you need 'more power' (=복잡한 state update logic 을 가진 reducer 함수를 사용할 수 있기 때문)
   * Should be considered if you have related pieces of state / data
   * Can be helpful if you have more complex state updates
+
+<br><br>
+
+## <span style='font-weight:700;background:#D3D3D3'>Context API</span>
+로그인 state 는 애플리케이션의 다양한 곳에서 필요하거나 사용된다. 
+state 를 prop 을 활용해 여러 컴포넌트를 통해 전달한다. 
+하지만 여기에서 MainHeader 는 중간 전달자 역할만 할 뿐, 전달하는 모든 prop 을 전혀 사용하지 않는다. 
+```js
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const storedUserLoggedInformation = localStorage.getItem('isLoggedIn')
+
+    if (storedUserLoggedInformation === '1') {
+      setIsLoggedIn(true)
+    }
+  }, [])
+  
+  const loginHandler = (email, password) => {
+    localStorage.setItem('isLoggedIn', '1')
+    setIsLoggedIn(true);
+  };
+  
+  const logoutHandler = () => {
+    setIsLoggedIn(false);
+  };
+
+  return (
+    <React.Fragment>
+      <MainHeader isAuthenticated={isLoggedIn} onLogout={logoutHandler} />
+      <main>
+        {!isLoggedIn && <Login onLogin={loginHandler} />}
+        {isLoggedIn && <Home onLogout={logoutHandler} />}
+      </main>
+    </React.Fragment>
+  );
+}
+
+export default App;
+```
+애플리케이션이 크다면, 이런식으로 전달하는 경로가 점점 길어질 수 있다.
+아래와 같은 prop chain (프롭 체인) 이 만들어진다.
+![screenshot](./img/prop_chain.png)
+
+이러한 문제를 해결하기 위해, 
+리액트에 내장된, 내부적인 state 저장소 = React Context
+![screenshot](./img/prop_chain02.png)
+prop chain 을 구축하지 않아도, 앱의 어떤 컴포넌트에서든 state 를 직접 변경할 수 있게 하고, 앱의 다른 컴포넌트에 직접 전달할 수 있게 한다
+
+폴더명 : context 또는 store, ...
+파일명 : auth-context.js
+AuthContext 와 같이 파스칼 표기법으로 하면 이 파일에 컴포넌트를 저장한다는 뜻이므로 위와 같이 케밥 표기밥을 사용
+
+(1) context 파일 생성 : src/store/auth-context.js
+```js
+import React from 'react'
+
+const AuthContext = React.createContext({
+    isLoggedIn: false, 
+    onLogout: () => { }
+})
+
+export default AuthContext;
+```
+
+<br>
+
+(2) 앱에서 컨텍스트 사용을 위한 작업 수행
+* 컨텍스트 공급 
+  => 컨텍스트를 활용할 수 있어야 하는 모든 컴포넌트를 JSX 코드로 감싸서 해당 컨텍스트를 리스닝할 수 있어야 한다 
+  => 이 때 ```<AuthContext.Provider>``` 는 root component 로 사용 가능하다
+  => 감싸진 Component 의 자식까지 AuthContext 에 접근 가능
+* 컨텍스트 소비 
+  => 값에 접근하려면 리스닝해야 한다 
+    (1) AuthContext Consumer 사용
+    (2) React Hook 사용 
+```js 
+// App.js
+import AuthContext from './store/auth-context';
+
+...
+
+return (
+    <AuthContext.Provider
+      value={{
+        isLoggedIn: isLoggedIn, 
+        onLogout: logoutHandler, 
+      }}
+    >
+      <MainHeader />
+      <main>
+        {!isLoggedIn && <Login onLogin={loginHandler} />}
+        {isLoggedIn && <Home onLogout={logoutHandler} />}
+      </main>
+    </AuthContext.Provider>
+  );
+```
+
+<br>
+
+Consumer 사용 
+isLoggedIn 이 변경될 때마다 리액트에 의해 Consumer 의 isLoggedIn 이 업데이트된다. 새로운 context 객체는 모든 listening component 로 전달된다. (= 이 context 를 소비하는 모든 컴포넌트에 전달된다) (소비하는 컴포넌트는 provider 에 의해 감싸져 있다)
+=> 이렇게 수정하면 isLoggedIn 을 전달하기 위해 prop 을 사용할 필요가 없다. 공급자로 감싼 다음 공급자에 값을 설정하면 된다. 그러면 감싸진 컴포넌트 (와 그의 자식들까지) 에서 해당 값을 리스닝할 수 있다
+```js
+// components/MainHeader/Navigation.js 
+import React from 'react';
+import AuthContext from '../../store/auth-context';
+
+import classes from './Navigation.module.css';
+
+const Navigation = (props) => {
+  return (
+    <AuthContext.Consumer>
+    {(context) => {
+        return (
+          <nav className={classes.nav}>
+            <ul>
+              {context.isLoggedIn && (
+                <li>
+                  <a href="/">Users</a>
+                </li>
+              )}
+              {context.isLoggedIn && (
+                <li>
+                  <a href="/">Admin</a>
+                </li>
+              )}
+              {context.isLoggedIn && (
+                <li>
+                  <button onClick={context.onLogout}>Logout</button>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )
+    }}
+    
+      </AuthContext.Consumer>
+  );
+};
+
+export default Navigation;
+```
+
+<br>
+
+Consumer 보다 더 우아한 방법 : Context Hook 
+```js
+import React, { useContext } from 'react';
+import AuthContext from '../../store/auth-context';
+
+import classes from './Navigation.module.css';
+
+const Navigation = (props) => {
+  const context = useContext(AuthContext)
+  
+  return (
+    <nav className={classes.nav}>
+      <ul>
+        {context.isLoggedIn && (
+          <li>
+            <a href="/">Users</a>
+          </li>
+        )}
+        {context.isLoggedIn && (
+          <li>
+            <a href="/">Admin</a>
+          </li>
+        )}
+        {context.isLoggedIn && (
+          <li>
+            <button onClick={context.onLogout}>Logout</button>
+          </li>
+        )}
+      </ul>
+    </nav>
+  )
+};
+
+export default Navigation;
+```
+
+<br>
+
+아래를 보면, 여전히 App Component 에서는 Login 과 Home component 에 prop 으로 login / logout 함수를 넘겨주고 있다. (엄밀히 말하면 Button Component 에)
+context 를 사용하지 않은 이유는 이 둘이 순순한 presentation component 이기 때문이다. 버튼 클릭을 항상 onLogout 또는 onLogin 에 바인딩하기 위해 Button 내부에 Context 를 사용하면 비효율적이기 때문이다. 
+```js
+<MainHeader/>
+<main>
+  {!isLoggedIn && <Login onLogin={loginHandler} />}
+  {isLoggedIn && <Home onLogout={logoutHandler} />}
+</main>
+```
+
+<br>
+<br>
+
+독립 수행형 context file
+(1) AuthContextProvider component 를 생성하여 export
+(2) App 에서 AuthContext 관련 코드 모두 삭제
+(3) Index.js 에서 App 컴포넌트를 AuthContextProvider 컴포넌트로 감싼다
+=> state 를 관리하는 1개의 중심 장소를 생성하였다.
+그 중심 장소는 App component 가 아닌, 전용 context component (=AuthContextProvider) 및 전용 context file (=auth-context.js) 이다
+이렇게 Auth state 관리와 AuthContext 관리에 관한 코드가 한 곳에 모여 있기 때문에 App Component 가 간결해지며, 이제 애플리케이션 전체 state 관리와는 관련이 없어지기 때문에 유지보수에 유리해진다.
+JSX 반환과 화면에 무언가를 가져와 보여주는 것에 집중할 수 있다. 
+모든 컴포넌트는 기본적으로 하나의 임무만 갖게 하는 것이 좋다. 
+```js 
+// src/store/auth-context.js
+import React, { useEffect, useState } from 'react'
+
+const AuthContext = React.createContext({
+    isLoggedIn: false, 
+    onLogout: () => { },
+    onLogin: (email, password) => { }
+})
+
+export const AuthContextProvider = (props) => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+    useEffect(() => {
+        const storedUserLoggedInformation = localStorage.getItem('isLoggedIn')
+
+        if (storedUserLoggedInformation === '1') {
+        setIsLoggedIn(true)
+        }
+    }, [])
+
+    const logoutHandler = () => {
+        localStorage.removeItem('isLoggedIn')
+        setIsLoggedIn(false)
+    }
+
+    const loginHandler = () => {
+        localStorage.setItem('isLoggedIn', '1')
+        setIsLoggedIn(true)
+    }
+
+    return <AuthContext.Provider 
+                value={{
+                    isLoggedIn: isLoggedIn,
+                    onLogout: logoutHandler,
+                    onLogin: loginHandler
+                }}
+            >
+                {props.children}
+            </AuthContext.Provider >
+}
+
+export default AuthContext;
+```
+
+```js
+// src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import './index.css';
+import App from './App';
+import { AuthContextProvider } from './store/auth-context';
+
+ReactDOM.render(
+    <AuthContextProvider>
+        <App />
+    </AuthContextProvider>,
+    document.getElementById('root')
+);
+```
+
+```js
+// src/App.js
+import React, { useContext } from 'react';
+
+import Login from './components/Login/Login';
+import Home from './components/Home/Home';
+import MainHeader from './components/MainHeader/MainHeader';
+import AuthContext from './store/auth-context';
+
+function App() {
+  const context = useContext(AuthContext)
+
+  return (
+    <React.Fragment>
+      <MainHeader/>
+      <main>
+        {!context.isLoggedIn && <Login />}
+        {context.isLoggedIn && <Home />}
+      </main>
+    </React.Fragment>
+  );
+}
+
+export default App;
+```
+
+```js
+// src/components/Home/Home.js
+import Reactm, { useContext } from 'react';
+import AuthContext from '../../store/auth-context';
+import Button from '../UI/Button/Button';
+
+import Card from '../UI/Card/Card';
+import classes from './Home.module.css';
+
+const Home = (props) => {
+  const context = useContext(AuthContext)
+
+  return (
+    <Card className={classes.home}>
+      <h1>Welcome back!</h1>
+      <Button onClick={context.onLogout}>Logout</Button>
+    </Card>
+  );
+};
+
+export default Home;
+```
+
+```js
+// src/components/Login/Login.js
+import React, { useState, useEffect, useReducer, useContext } from 'react';
+
+import Card from '../UI/Card/Card';
+import classes from './Login.module.css';
+import Button from '../UI/Button/Button';
+import AuthContext from '../../store/auth-context';
+
+const emailReducer = (state, action) => { // 여기의 state 는 최신 state snapshot 임이 보장된다 (react 가 제공)
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.includes('@') }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.includes('@') }
+  }
+  return { value: '', isValid: false }
+}
+
+const passwordReducer = (state, action) => {
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.trim().length > 6 }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.trim().length > 6 }
+  }
+  return { value: '', isValid: false }
+}
+// 컴포넌트 함수 바깥에 만들어짐 : 컴포넌트 함수 내부에서 만들어진 데이터가 불필요하기 때문 (상호작용X)
+// 인자 : 최신 state snapshot, dispatched action 
+
+const Login = (props) => {
+  const [formIsValid, setFormIsValid] = useState(false);
+
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
+    value: '', 
+    isValid: null, 
+  })
+
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
+    value: '',
+    isValid: null, 
+  })
+
+  const authContext = useContext(AuthContext)
+
+  const { isValid: emailIsValid } = emailState       // object destructuring + 별칭 할당(alias assignment)   <-> * 값 할당 (value assignment)
+  const { isValid: passwordIsValid } = passwordState  // object destructuring + 별칭 할당(alias assignment)
+
+  useEffect(() => {
+    const identifier = setTimeout(() => { 
+      console.log('checking validity')
+      setFormIsValid(
+      emailIsValid && passwordIsValid
+    );
+    }, 500); 
+
+    return () => { 
+      clearTimeout(identifier)
+    }; 
+  }, [emailIsValid, passwordIsValid])
+
+  const emailChangeHandler = (event) => {
+    dispatchEmail({ type: 'USER_INPUT', payload: event.target.value }) 
+    // dispatch Function 을 호출하여 state 값을 update 하고, action 에 전달
+    // action 은 사용자가 정의할 수 있다. 형식은 자유이지만, 보통 객체.
+    // 보통 다음과 같은 형식을 따른다 : { type: 식별자, paylod: 전달하고싶은 값 }
+    // 그러면 useReducer 에 이 dispatchEmail 이라는 리듀서 함수를 전달했기 때문에
+    // useReducer 에서 전달한 액션 = {type: 'USER_INPUT', val: '...'} 을 처리할 수 있다
+  };
+
+  const passwordChangeHandler = (event) => {
+    dispatchPassword({ type: 'USER_INPUT', payload: event.target.value })
+  };
+
+  const validateEmailHandler = () => {
+    dispatchEmail({ type: 'INPUT_BLUR' })
+  };
+
+  const validatePasswordHandler = () => {
+    dispatchPassword({ type: 'INPUT_BLUR' })
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+    authContext.onLogin(emailState.value, passwordState.value);
+  };
+
+  return (
+    <Card className={classes.login}>
+      <form onSubmit={submitHandler}>
+        <div
+          className={`${classes.control} ${
+            emailState.isValid === false ? classes.invalid : ''
+          }`}
+        >
+          <label htmlFor="email">E-Mail</label>
+          <input
+            type="email"
+            id="email"
+            value={emailState.value}
+            onChange={emailChangeHandler}
+            onBlur={validateEmailHandler}
+          />
+        </div>
+        <div
+          className={`${classes.control} ${
+            passwordState.isValid === false ? classes.invalid : ''
+          }`}
+        >
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={passwordState.value}
+            onChange={passwordChangeHandler}
+            onBlur={validatePasswordHandler}
+          />
+        </div>
+        <div className={classes.actions}>
+          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
+            Login
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+export default Login;
+```
+
+<br><br>
+
+## <span style='font-weight:700;background:#D3D3D3'>Context Limitations</span>
+* context : 애플리케이션 또는 component 전체 state 에는 적합.
+  즉, 기본적으로 여러 컴포넌트에 영향을 미치는 state 들에는 적합.
+  하지만, component configuration (구성) 을 대체할 수는 없다
+* React Context is <strong>NOT optimized</strong> for high frequency changes!
+  변경이 잦은 경우에는 적합하지 않다!
+* 그렇다면, '앱 전체에 걸쳐 또는 컴포넌트 전체에 걸쳐 state 가 자주 변경되는 경우에' 어떤 것을 사용할까?
+  => <strong>Redux</strong>
+<br>
+* React Context also <strong>shouldn't be used to replace ALL</strong> component communications and props
+  => Component should still be configurable via props and short "prop chains" might not need any replacement 
+  프롭의 모든 커뮤니케이션을 대체하기 위해 context 나 redux 등을 사용해서는 안된다.
+  프롭은 여전히 컴포넌트 구성에 있어 필수적이고 중요하다. 
+  길고 비효율적인 prop chain 을 교체하기 위해서라면 context 나 redux 를 사용하자.
+
+<br><br>
+
+## <span style='font-weight:700;background:#D3D3D3'>Rules of Hooks</span>
+* React Hook ? use 로 시작하는 모든 함수 
+  i.e. useEffect, useReducer, useContext, ...
+<br>
+* (1) Only call React Hooks in <strong>React Functions</strong> 
+  리액트 훅은 리액트 함수에서만 호출해야 한다
+  * React Component Functions
+  * Custom Hooks
+  예를 들어, Login 컴포넌트에 emailRdeucer 함수가 있다. 
+  Login 함수는 Login Component 에 대한 Component 함수이다. 마지막에 JSX 를 반환하므로 함수.
+  하지만 emailReducer 는 객체를 반환하므로 React Component 가 아니다.
+  따라서 emailReducer 내에서 useState 호출이 불가능하다
+  ```js
+  // Login.js
+
+  const emailReducer = (state, action) => { // 여기의 state 는 최신 state snapshot 임이 보장된다 (react 가 제공)
+  if (action.type === 'USER_INPUT') {
+      return { value: action.payload, isValid: action.payload.includes('@') }
+    }
+    if (action.type === 'INPUT_BLUR') {
+      return { value: state.value, isValid: state.value.includes('@') }
+    }
+    return { value: '', isValid: false }
+  }
+
+  const Login = (props) => {
+    ...
+  }
+  ```
+  <br>
+* (2) Only call React Hooks at the <strong>Top Level</strong>
+   리액트 훅은 리액트 컴포넌트 함수 또는 사용자 정의 훅 함수의 최상위 수준에서만 호출해야 한다
+   * Don't call them <strong>in nested functions</strong> (중첩함수에서 X)
+   * Don't call them <strong>in any block statements</strong> (block 문에서 X)
+   예를 들어, Login Component 내의 useEffect 내에서 useContext 등의 호출이 불가능하다.
+   그 외에 useEffect 외부의 위쪽 라인은 가능하다.
+   중첩 함수 뿐만 아니라 if 문 내에서도 허용되지 않는다.
+   ```js
+   // Login.js
+  const Login = (props) => {
+    useEffect(() => {
+      const identifier = setTimeout(() => { 
+        console.log('checking validity')
+        setFormIsValid(
+        emailIsValid && passwordIsValid
+      );
+      }, 500); 
+
+      return () => { 
+        clearTimeout(identifier)
+      }; 
+    }, [emailIsValid, passwordIsValid])
+  };
+   ```
+  <br>
+
+* (3) extra, unofficial Rule to useEffect() : <strong>ALWAYS add everything you refer to insde of useEffect() as a dependency</strong>
+참조하는 모든 항목을 의존성으로 useEffect 내부에 추가해야 한다 
+  ```js
+  useEffect(() => {
+    const identifier = setTimeout(() => { 
+      setFormIsValid(
+        emailIsValid && passwordIsValid
+      );
+    }, 500); 
+
+    return () => { 
+      clearTimeout(identifier)
+    }; 
+  }, [emailIsValid, passwordIsValid])
+  ```
+  * dependencies : emailIsValid, passwordIsValid, setFormIsValid 
+  * setFormIsValid 가 Browser API 가 아님에도 불구하고 추가하지 않은 이유 (예외적 상황) :
+    useReducer 또는 useState 에 의해 노출된 state update 함수는 변경되지 않도록 React 가 보장한다
+    따라서 의존성(dependency) 로 추가할 필요가 없다. (추가해도 문제되지는 않지만, 변하지 않으므로 불필요! 따라서 생략한다)
+  * 이외에, Browser 에서 제공하지 않는 것, 컴포넌트 함수 외부에서 오는 데이터들, 
+    즉, useEffect 를 사용하는 컴포넌트 함수 내부의 데이터들은 의존성 배열에 넣어야 한다  
+
+
+<br><br>
+
+---
+### UI/Input Component 생성
+
+```js
+// UI/Input.js
+import React from 'react'
+
+import classes from './Input.module.css'
+
+const Input = props => {
+  return (
+    <div
+        className={`${classes.control} ${
+          props.isValid === false ? classes.invalid : ''
+        }`}
+      >
+      <label htmlFor={props.id}>{props.label}</label>
+        <input
+          type={props.type}
+          id={props.id}
+          value={props.value}
+          onChange={props.onChange}
+          onBlur={props.onBlur}
+        />
+      </div>
+  )
+}
+
+export default Input
+```
+
+```js
+// Login.js
+import React, { useState, useEffect, useReducer, useContext } from 'react';
+
+import Card from '../UI/Card/Card';
+import classes from './Login.module.css';
+import Button from '../UI/Button/Button';
+import AuthContext from '../../store/auth-context';
+import Input from '../UI/Input/Input';
+
+const emailReducer = (state, action) => { // 여기의 state 는 최신 state snapshot 임이 보장된다 (react 가 제공)
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.includes('@') }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.includes('@') }
+  }
+  return { value: '', isValid: false }
+}
+
+const passwordReducer = (state, action) => {
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.trim().length > 6 }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.trim().length > 6 }
+  }
+  return { value: '', isValid: false }
+}
+// 컴포넌트 함수 바깥에 만들어짐 : 컴포넌트 함수 내부에서 만들어진 데이터가 불필요하기 때문 (상호작용X)
+// 인자 : 최신 state snapshot, dispatched action 
+
+const Login = (props) => {
+  // const [enteredEmail, setEnteredEmail] = useState('');
+  // const [emailIsValid, setEmailIsValid] = useState();
+  // const [enteredPassword, setEnteredPassword] = useState('');
+  // const [passwordIsValid, setPasswordIsValid] = useState();
+  const [formIsValid, setFormIsValid] = useState(false);
+
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
+    value: '', 
+    isValid: null, 
+  })
+
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
+    value: '',
+    isValid: null, 
+  })
+
+  const authContext = useContext(AuthContext)
+
+  const { isValid: emailIsValid } = emailState       // object destructuring + 별칭 할당(alias assignment)   <-> * 값 할당 (value assignment)
+  const { isValid: passwordIsValid } = passwordState  // object destructuring + 별칭 할당(alias assignment)
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      setFormIsValid(emailIsValid && passwordIsValid)
+    }, 500)
+  
+    return () => {
+      clearTimeout(identifier)
+    }
+  }, [emailIsValid, passwordIsValid])
+  
+
+  const emailChangeHandler = (event) => {
+    // setEnteredEmail(event.target.value);
+
+    dispatchEmail({ type: 'USER_INPUT', payload: event.target.value }) 
+    // dispatch Function 을 호출하여 state 값을 update 하고, action 에 전달
+    // action 은 사용자가 정의할 수 있다. 형식은 자유이지만, 보통 객체.
+    // 보통 다음과 같은 형식을 따른다 : { type: 식별자, paylod: 전달하고싶은 값 }
+    // 그러면 useReducer 에 이 dispatchEmail 이라는 리듀서 함수를 전달했기 때문에
+    // useReducer 에서 전달한 액션 = {type: 'USER_INPUT', val: '...'} 을 처리할 수 있다
+
+    // setFormIsValid(
+    //   emailState.isValid && passwordState.isValid
+    // );
+  };
+
+  const passwordChangeHandler = (event) => {
+    // setEnteredPassword(event.target.value);
+    dispatchPassword({ type: 'USER_INPUT', payload: event.target.value })
+
+    // setFormIsValid(
+    //   emailState.value.includes('@') && event.target.value.trim().length > 6
+    // )
+  };
+
+  const validateEmailHandler = () => {
+    // setEmailIsValid(emailState.isValid);
+    dispatchEmail({ type: 'INPUT_BLUR' })
+  };
+
+  const validatePasswordHandler = () => {
+    // setPasswordIsValid(enteredPassword.trim().length > 6);
+    dispatchPassword({ type: 'INPUT_BLUR' })
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+    authContext.onLogin(emailState.value, passwordState.value);
+  };
+
+  return (
+    <Card className={classes.login}>
+      <form onSubmit={submitHandler}>
+        <Input
+          id="email"
+          label="E-mail"
+          type="email"
+          isValid={emailIsValid}
+          value={emailState.value}
+          onChange={emailChangeHandler}
+          onBlur={validateEmailHandler}
+        />
+        <Input
+          id="password"
+          label="Password"
+          type="password"
+          isValid={passwordIsValid}
+          value={passwordState.value}
+          onChange={passwordChangeHandler}
+          onBlur={validatePasswordHandler}
+        />
+        <div className={classes.actions}>
+          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
+            Login
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+export default Login;
+```
+
+<br>
+
+### Ref
+* Input Component 와 명령형으로 상호작용할 수 있다
+  => state 를 전달해어 component 에서 무언가를 변경하는 식이 아니라,
+    컴포넌트 내부에서 함수를 호출하는 방식으로!
+* 일반적인 React Pattern 이 아니므로 자주 사용해서는 안 되지만, 필요할 때 사용
+<br>
+1) Button 에서 ```disabled={!formIsValid}``` 속성 삭제
+  버튼이 항상 클릭될 수 있게 활성화
+
+```js
+// Login.js
+<Button type="submit" className={classes.btn}>
+  Login
+</Button>
+```
+
+2) Login 컴포넌트의 submitHandler 함수 수정
+  폼이 유효한지 확인하고, 유효한 경우에만 onLogin 호출
+  그렇지 않은 경우에는 유효하지 않은 Input focus
+
+  ```useImperativeHandle``` : React Hook. 컴포넌트나 컴포넌트 내부에서 오는 기능들을 명령적으로 사용할 수 있게 한다. 
+  즉, 일반적인 state prop 관리를 통해 하지 않고, 부모 컴포넌트의 state 를 통해 컴포넌트를 제어하지 않고 프로그래밍적으로 컴포넌트에서 무언가를 직접 호출하거나 조작해서 사용하게 한다 
+  자주 사용하지는 않을 것. 
+
+```js
+// Login.js
+import React, { useState, useEffect, useReducer, useContext, useRef } from 'react';
+
+import Card from '../UI/Card/Card';
+import classes from './Login.module.css';
+import Button from '../UI/Button/Button';
+import AuthContext from '../../store/auth-context';
+import Input from '../UI/Input/Input';
+
+const emailReducer = (state, action) => { 
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.includes('@') }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.includes('@') }
+  }
+  return { value: '', isValid: false }
+}
+
+const passwordReducer = (state, action) => {
+  if (action.type === 'USER_INPUT') {
+    return { value: action.payload, isValid: action.payload.trim().length > 6 }
+  }
+  if (action.type === 'INPUT_BLUR') {
+    return { value: state.value, isValid: state.value.trim().length > 6 }
+  }
+  return { value: '', isValid: false }
+}
+
+const Login = (props) => {
+  const [formIsValid, setFormIsValid] = useState(false);
+
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
+    value: '', 
+    isValid: null, 
+  })
+
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
+    value: '',
+    isValid: null, 
+  })
+
+  const authContext = useContext(AuthContext)
+
+  const emailInputRef = useRef()
+  const passwordInputRef = useRef()
+
+  const { isValid: emailIsValid } = emailState       
+  const { isValid: passwordIsValid } = passwordState  
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      setFormIsValid(emailIsValid && passwordIsValid)
+    }, 500)
+  
+    return () => {
+      clearTimeout(identifier)
+    }
+  }, [emailIsValid, passwordIsValid])
+  
+
+  const emailChangeHandler = (event) => {
+    dispatchEmail({ type: 'USER_INPUT', payload: event.target.value }) 
+  };
+
+  const passwordChangeHandler = (event) => {
+    dispatchPassword({ type: 'USER_INPUT', payload: event.target.value })
+  };
+
+  const validateEmailHandler = () => {
+    dispatchEmail({ type: 'INPUT_BLUR' })
+  };
+
+  const validatePasswordHandler = () => {
+    dispatchPassword({ type: 'INPUT_BLUR' })
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault()
+    if (formIsValid) {
+      authContext.onLogin(emailState.value, passwordState.value);
+    } else if (!emailIsValid) {
+      emailInputRef.current.focus()
+    } else {
+      passwordInputRef.current.focus()
+    }
+  };
+
+  return (
+    <Card className={classes.login}>
+      <form onSubmit={submitHandler}>
+        <Input
+          ref={emailInputRef}
+          id="email"
+          label="E-mail"
+          type="email"
+          isValid={emailIsValid}
+          value={emailState.value}
+          onChange={emailChangeHandler}
+          onBlur={validateEmailHandler}
+        />
+        <Input
+          ref={passwordInputRef}
+          id="password"
+          label="Password"
+          type="password"
+          isValid={passwordIsValid}
+          value={passwordState.value}
+          onChange={passwordChangeHandler}
+          onBlur={validatePasswordHandler}
+        />
+        <div className={classes.actions}>
+          <Button type="submit" className={classes.btn}>
+            Login
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+export default Login;
+```
+
+```js
+// UI/Input.js
+import React, { useRef, useImperativeHandle } from 'react'
+
+import classes from './Input.module.css'
+
+const Input = React.forwardRef((props, ref) => {
+  const inputRef = useRef()
+
+  const activate = () => {  // input 내부가 아니라 외부에서 호출
+    inputRef.current.focus()
+  }
+
+  useImperativeHandle(ref, () => {
+    return {
+      focus: activate 
+    }
+  })
+  
+  return (
+    <div
+        className={`${classes.control} ${
+          props.isValid === false ? classes.invalid : ''
+        }`}
+      >
+      <label htmlFor={props.id}>{props.label}</label>
+      <input
+          ref={inputRef}
+          type={props.type}
+          id={props.id}
+          value={props.value}
+          onChange={props.onChange}
+          onBlur={props.onBlur}
+        />
+      </div>
+  )
+})
+
+export default Input
+```
+useImperativeHandle 및 forwardRef 를 사용하면, 
+리액트 컴포넌트에서 온 기능을 노출하여 
+부모 컴포넌트에 연결한 다음, 부모 컴포넌트 안에서 참조(Ref) 를 통해 그 컴포넌트를 사용하고 기능을 trigger 할 수 있다. 
+되도록이면 사용하지 않으면 좋을 예외적인 Pattern 이지만, focus, scrolloing 등의 사례에서는 유용할 수 있다.
