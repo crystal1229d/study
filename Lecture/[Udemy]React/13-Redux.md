@@ -199,3 +199,387 @@ const countReducer = (state={ counter:0 }, action ) => {
 store.dispatch({ type: 'increment' })
 store.dispatch({ type: 'decrement' })
 ```
+
+<br>
+
+### Redux Practice
+* <strong>useSelector</strong> Hook : useStore 와 비슷한 역할을 하만 더 편리하다
+    useStore 을 사용하면 store 에 바로 접근
+    useSelectore 을 사용하면 자동으로 store 가 관리하는 일부 state 를 선택
+    ```const counter = useSelector(state => state.counter)```
+* <strong>useDispatch</strong> Hook : 
+    redux store 에 대한 action 을 dispatch(발송)하는 함수 
+    ```js 
+    const dispatch = useDispatch()
+
+    const incrementHandler = () => { 
+        dispatch({ type: 'increment' })
+    }
+    const decrementHandler = () => { 
+        dispatch({ type: 'decrement' })
+    }
+    ```
+* redux 로 작업시, 기존의 state 를 변형해서는 안된다
+객체와 배열은 자바스크립트에서 참조(reference) 값 이므로 의도치않게 기존 state 를 재정의하거나 변경하기 쉽다
+    ```js
+    // (O) 새로운 state 객체 반환
+    if (action.type === 'increment') {
+        return {
+            counter: state.counter + 1, 
+            showCounter: state.showCounter
+        }
+    }  
+
+    // (X) 기존 state 변경
+    if (action.type === 'increment') {
+        return {
+            state.counter++
+
+            return {
+                counter: state.counter + 1, 
+                showCounter: state.showCounter
+            }
+        }
+    }  
+    ```
+
+<br>
+
+### Redux Toolikt
+1. redux toolkit 설치 ```npm install @reduxjs/toolkit```
+2. 설치 이후, package.json 에서 redux 삭제 (redux toolkit 에 포함되어 있기 때문)
+
+#### (기존 코드 : 순수 Redux 만 사용)
+```js
+// src/store/index.js
+
+import { createStore } from 'redux'
+
+const initialState = { counter: 0, showCounter: true }
+
+const counterReducer = (state = initialState, action) => {
+    if (action.type === 'increment') {
+        return {
+            counter: state.counter + 1, 
+            showCounter: state.showCounter
+        }
+    }
+    if (action.type === 'increase') {
+        return {
+            counter: state.counter + action.amount,
+            showCounter: state.showCounter
+        }
+    }
+    if (action.type === 'decrement') {
+        return {
+            counter: state.counter - 1,
+            showCounter: state.showCounter
+        }
+    }
+
+    if (action.type === 'toggle') {
+        return {
+            counter: state.counter, 
+            showCounter: !state.showCounter
+        }
+    }
+
+    return state
+}
+
+const store = createStore(counterReducer)
+
+export default store 
+```
+```js
+// src/components/Counter.js
+
+import { useSelector, useDispatch } from 'react-redux';
+import classes from './Counter.module.css';
+
+const Counter = () => {
+  const dispatch = useDispatch()
+  const counter = useSelector(state => state.counter)
+  const show = useSelector(state => state.showCounter)
+
+  const incrementHandler = () => { 
+    dispatch({ type: 'increment' })
+  }
+  const increaseHandler = () => { 
+    dispatch({ type: 'increase', amount: 5 })
+  }
+  const decrementHandler = () => { 
+    dispatch({ type: 'decrement' })
+  }
+
+  const toggleCounterHandler = () => {
+    dispatch({ type: 'toggle' })
+  };
+
+  return (
+    <main className={classes.counter}>
+      <h1>Redux Counter</h1>
+      {show && <div className={classes.value}>{counter}</div>}
+      <div>
+        <button onClick={incrementHandler}>Increment</button>
+        <button onClick={increaseHandler}>Increase By 5</button>
+        <button onClick={decrementHandler}>Decrement</button>
+      </div>
+      <button onClick={toggleCounterHandler}>Toggle Counter</button>
+    </main>
+  );
+};
+
+export default Counter;
+```
+```js
+// src/index.js
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+
+import './index.css';
+import App from './App';
+import store from './store/index'
+
+ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
+```
+![screenshot](./img/redux-toolkit_01.png)
+
+<br>
+#### Redux Toolkit 적용
+Redux Toolkit 을 사용하면 State, Reducer, Action 관리가 쉽다. 
+![screenshot](./img/redux-toolkit_02.png)
+1. createSlice(redux-toolkit) > createReducer(redux-toolkit) >  createStore(redux)
+2. createStore : store 생성 ```const store = createStore(counterSlice.reducer)```
+    configureStore : 여러 개의 reducer 를 하나의 reducer 로 합칠 수 있다. 
+3. createSlice : dispatch action (액션 전달)
+                서로 다른 리듀서에 고유한 액션 식별자(identifiers) 자동 생성
+                액션 식별자 값을 얻으려면 counterSlice.actions 사용.
+    => 액션 객체 생성 작업 및 고유 식별자를 생각하는 작업, 오타에 대해 걱정할 필요가 없다.     
+4. configureStore : store 를 생성하고, 변수로 root reducer 를 배정한 객체를 보낸다.
+    이 때 하나의 리듀서 함수만 가리킬 수 있고, 여러 개의 리듀서 함수를 가리키기 위해 map 을 만들어 보낼 수 있다. 후자와 같이 하면 이 리듀서 함수들이 합쳐져 하나의 큰 리듀서가 된다.
+    이렇게 보낸 데이터를 useSelector 로 읽는다.
+    useDispatch 를 이용해 action 에 접근할 수 있다. 
+```js
+const store = configureStore({
+    reducer: { counter: counterReducer, auth: authReducer }, 
+})
+```
+
+<br>
+
+```js
+// src/store/index.js
+import { createSlice, configureStore } from '@reduxjs/toolkit'
+
+// Counter
+const initialCounterState = { counter: 0, showCounter: true }
+
+const counterSlice = createSlice({
+    name: 'counter', 
+    initialState: initialCounterState,
+    reducers: {
+        increment(state) { 
+            state.counter++;
+        }, 
+        decrement(state) { 
+            state.counter--;
+        }, 
+        increase(state, action) { 
+            state.counter = state.counter + action.payload;
+        }, 
+        toggleCounter(state) {
+            state.showCounter = !state.showCounter;
+         }, 
+    }
+})
+
+// Auth
+const initialAuthState = {
+    isAuthenticated: false
+}
+
+const authSlice = createSlice({
+    name: 'authentication', 
+    initialState: initialAuthState, 
+    reducers: {
+        login(state) { 
+            state.isAuthenticated = true;
+        }, 
+        logout(state) { 
+            state.isAuthenticated = false;
+        }
+    }
+})
+
+const store = configureStore({
+    reducer: {
+        counter: counterslice.reducer
+        auth: authSlice.reducer, 
+    }, 
+})
+
+export const counterActions = counterSlice.actions
+export const authActions = authSlice.actions;
+
+export default store 
+```
+
+위와 같이 한개의 파일에 두 개 이상의 slice 가 있을 경우, 아래와 같이 각 slice 를 파일로 분리할 수 있다. 이 때 파일명은 counter.js 또는 counter-slice.js (auth.js 또는 auth-slice.js) 와 같이 작성할 수 있다. 
+```js
+// src/store/index.js
+import { configureStore } from '@reduxjs/toolkit'
+
+import counterSlice from './counter'
+import authSlice from './auth'
+
+const store = configureStore({
+    reducer: {
+        counter: counterSlice.reducer, 
+        auth: authSlice.reducer, 
+    }, 
+})
+
+export default store 
+```
+```js
+// src/store/counter.js
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialCounterState = { counter: 0, showCounter: true }
+
+const counterSlice = createSlice({
+    name: 'counter', 
+    initialState: initialCounterState,
+    reducers: {
+        increment(state) { 
+            state.counter++;
+        }, 
+        decrement(state) { 
+            state.counter--;
+        }, 
+        increase(state, action) { 
+            state.counter = state.counter + action.payload;
+        }, 
+        toggleCounter(state) {
+            state.showCounter = !state.showCounter;
+         }, 
+    }
+})
+
+export const counterActions = counterSlice.actions
+
+export default counterSlice
+```
+```js
+// src/store/auth.js
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialAuthState = {
+    isAuthenticated: false
+}
+
+const authSlice = createSlice({
+    name: 'authentication', 
+    initialState: initialAuthState, 
+    reducers: {
+        login(state) { 
+            state.isAuthenticated = true;
+        }, 
+        logout(state) { 
+            state.isAuthenticated = false;
+        }
+    }
+})
+
+export const authActions = authSlice.actions;
+
+export default authSlice
+```
+
+아래와 같이 수정하면 전체 slice 대신 reducer 만 export 할 수 있다.
+
+```js
+// src/store/index.js
+import { configureStore } from '@reduxjs/toolkit'
+
+import counterReducer from './counter'
+import authReducer from './auth'
+
+const store = configureStore({
+    reducer: {
+        counter: counterReducer, 
+        auth: authReducer, 
+    }, 
+})
+
+export default store 
+```
+```js
+// src/store/counter.js
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialCounterState = { counter: 0, showCounter: true }
+
+const counterSlice = createSlice({
+    name: 'counter', 
+    initialState: initialCounterState,
+    reducers: {
+        increment(state) { 
+            state.counter++;
+        }, 
+        decrement(state) { 
+            state.counter--;
+        }, 
+        increase(state, action) { 
+            state.counter = state.counter + action.payload;
+        }, 
+        toggleCounter(state) {
+            state.showCounter = !state.showCounter;
+         }, 
+    }
+})
+
+export const counterActions = counterSlice.actions
+
+export default counterSlice.reducer
+```
+```js
+// src/store/auth.js
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialAuthState = {
+    isAuthenticated: false
+}
+
+const authSlice = createSlice({
+    name: 'authentication', 
+    initialState: initialAuthState, 
+    reducers: {
+        login(state) { 
+            state.isAuthenticated = true;
+        }, 
+        logout(state) { 
+            state.isAuthenticated = false;
+        }
+    }
+})
+
+export const authActions = authSlice.actions;
+
+export default authSlice.reducer
+```
+
+위와 같이 수정한 이후에 이를 사용하는 component 를 아래와 같이 수정한다.
+```js
+// src/components/Counter.js
+// (기존) import { counterActions } from '../store/index';
+import { counterActions } from '../store/counter';
+```
+```js
+// src/components/Header.js
+// (기존) import { authActions } from '../store/index';
+import { authActions } from '../store/auth';
+```
